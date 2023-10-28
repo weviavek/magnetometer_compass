@@ -1,21 +1,29 @@
 package com.example.magnetometer_compass
 
+import android.app.ActivityManager
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
 import android.widget.Toast
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import android.provider.Settings
+import android.os.Build
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
+import androidx.annotation.RequiresApi
 
 class MainActivity : FlutterActivity(), SensorEventListener {
     private val channelName = "magnetometer"
     private lateinit var sensorManager: SensorManager
     private var magnetometer: Sensor? = null
-    private val sensorDelay = SensorManager.SENSOR_DELAY_FASTEST
+    private val sensorDelay = 1000;
     private val magneticValues = FloatArray(3)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -24,15 +32,17 @@ class MainActivity : FlutterActivity(), SensorEventListener {
         val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
 
         channel.setMethodCallHandler { call: MethodCall, result: MethodChannel.Result ->
-            if (call.method == "testing") {
-                Toast.makeText(this, "Testing", Toast.LENGTH_LONG).show()
-                result.success(0)
-            } else if (call.method == "streamMagnetometer") {
+             if (call.method == "streamMagnetometer") {
                 startMagnetometerStream()
                 result.success(null)
             }
-            if(call.method=="dispose"){
-                onDestroy();
+            if (call.method == "setFlashlightOn") {
+                setFlashlightOn();
+                result.success(true)
+
+            } else if(call.method=="setFlashlightOff"){
+                setFlashlightOff()
+                result.success(true)
             }
         }
     }
@@ -43,6 +53,30 @@ class MainActivity : FlutterActivity(), SensorEventListener {
 
         if (magnetometer != null) {
             sensorManager.registerListener(this, magnetometer, sensorDelay)
+        }
+    }
+    private fun setFlashlightOn(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val cameraIdList = cameraManager.cameraIdList
+            for (cameraId in cameraIdList) {
+                try {
+                    cameraManager.setTorchMode(cameraId,true)
+                } catch (e: Exception) {
+                }
+            }
+        }
+    }
+    private fun setFlashlightOff() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val cameraIdList = cameraManager.cameraIdList
+            for (cameraId in cameraIdList) {
+                try {
+                    cameraManager.setTorchMode(cameraId,false)
+                } catch (e: Exception) {
+                }
+            }
         }
     }
 
@@ -64,4 +98,5 @@ class MainActivity : FlutterActivity(), SensorEventListener {
         super.onDestroy()
         sensorManager.unregisterListener(this)
     }
+
 }
