@@ -23,6 +23,8 @@ class MainActivity : FlutterActivity(), SensorEventListener {
     private val channelName = "magnetometer"
     private lateinit var sensorManager: SensorManager
     private var magnetometer: Sensor? = null
+
+    private var gyro: Sensor? = null
     private val sensorDelay = 1000;
     private val magneticValues = FloatArray(3)
 
@@ -42,7 +44,11 @@ class MainActivity : FlutterActivity(), SensorEventListener {
 
             } else if(call.method=="setFlashlightOff"){
                 setFlashlightOff()
-                result.success(true)
+                result.success(false)
+            }
+            if(call.method=="gyro"){
+                startGyroStream()
+                result.success(null)
             }
         }
     }
@@ -92,11 +98,23 @@ class MainActivity : FlutterActivity(), SensorEventListener {
             val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, channelName)
             channel.invokeMethod("magnetometerData", magneticValues)
         }
+        if(event!!.sensor==gyro){
+
+            val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, channelName)
+            channel.invokeMethod("gyroData", event.values[0])
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
     }
+    private fun startGyroStream() {
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
+        if (gyro != null) {
+            sensorManager.registerListener(this, gyro, 100000)
+        }
+    }
 }

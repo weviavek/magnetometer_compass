@@ -10,37 +10,62 @@ class Magnetometer {
   bool canUpdate = true;
   final channel = const MethodChannel('magnetometer');
   double headingDegrees = 0;
+  double lastData = 0;
 
-  final _magnetometerStreamController = StreamController<double>();
+  static double magneticFieldStrength = 0;
+  static final _magnetometerStreamController = StreamController<double>();
+  static final _magneticStrengthStreamController = StreamController<double>();
 
-  Stream<double> get magnetometerStream => _magnetometerStreamController.stream;
+  static Stream<double> get magnetometerStream =>
+      _magnetometerStreamController.stream;
+  static Stream<double> get magnetenPowerStream =>
+      _magneticStrengthStreamController.stream;
 
-  Magnetometer() {
+  startagnetometer() {
     channel.setMethodCallHandler((call) {
       if (call.method == 'magnetometerData') {
         currentMagnetometerEvent = MagnetometerEvent(
             x: call.arguments[0], y: call.arguments[1], z: call.arguments[2]);
         double headingRadians =
             atan2(currentMagnetometerEvent.y, currentMagnetometerEvent.x);
-        double newHeadingDegrees = ((headingRadians * 180 / pi) - 90);
-        canUpdate =
-            currentTime.difference(DateTime.now()).inMicroseconds.abs() > 30000
-                ? true
-                : false;
+        double newHeadingDegrees = (headingRadians * 180 / pi) - 90;
+
+        newHeadingDegrees = (newHeadingDegrees % 360 + 360) % 360;
 
         if (canUpdate) {
           currentTime = DateTime.now();
           headingDegrees = newHeadingDegrees.roundToDouble();
+          magneticFieldStrength =
+              calculateMagneticFieldStrength(currentMagnetometerEvent);
           _magnetometerStreamController.sink.add(headingDegrees);
+          _magneticStrengthStreamController.sink.add(magneticFieldStrength);
+        }
+      }
+      if (call.method == 'gyroData') {
+        canUpdate = (lastData - call.arguments).abs() >= 0.02;
+        if (canUpdate) {
+          
+          lastData = call.arguments;
         }
       }
       return Future(() => null);
     });
     channel.invokeMethod('streamMagnetometer');
+
+    channel.invokeMethod('gyro');
   }
 
   void dispose() {
     _magnetometerStreamController.close();
+  }
+
+  static double calculateMagneticFieldStrength(MagnetometerEvent data) {
+    double bx = data.x;
+    double by = data.y;
+    double bz = data.z;
+    magneticFieldStrength = sqrt(bx * bx + by * by + bz * bz);
+
+    return magneticFieldStrength;
   }
 }
 
