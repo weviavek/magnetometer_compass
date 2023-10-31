@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:magnetometer_compass/about_dialog.dart';
 import 'package:magnetometer_compass/functions.dart';
+import 'package:magnetometer_compass/model/acc_medel.dart';
 import 'package:magnetometer_compass/widgets.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -99,7 +100,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: EdgeInsets.only(bottom: 15, left: 12),
                   child: MagneticStrength(),
                 ),
-              )
+              ),
+              StreamBuilder<AccelerometerEvent>(
+                  stream: Magnetometer.accelerometerStream,
+                  builder: (context, snapshot) {
+                    return Positioned(
+                        left: snapshot.hasData
+                            ? 150 + ((snapshot.data!.x / 10) * 150)
+                            : 0,
+                        top: snapshot.hasData
+                            ? 150 + ((snapshot.data!.y / 10) * 150)
+                            : 0,
+                        child:const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircleAvatar(
+                            radius: 10,
+                            backgroundColor: Colors.red,
+                          ),
+                        ));
+                  }),
             ],
           ),
         ),

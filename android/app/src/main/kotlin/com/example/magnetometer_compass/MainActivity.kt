@@ -25,8 +25,10 @@ class MainActivity : FlutterActivity(), SensorEventListener {
     private var magnetometer: Sensor? = null
 
     private var gyro: Sensor? = null
-    private val sensorDelay = 1000;
+    private val sensorDelay = 0;
     private val magneticValues = FloatArray(3)
+
+    private val levelValues = FloatArray(3)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -100,8 +102,12 @@ class MainActivity : FlutterActivity(), SensorEventListener {
         }
         if(event!!.sensor==gyro){
 
+            levelValues[0] = event.values[0]
+            levelValues[1] = event.values[1]
+            levelValues[2] = event.values[2]
             val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, channelName)
-            channel.invokeMethod("gyroData", event.values[0])
+
+            channel.invokeMethod("gyroData", levelValues)
         }
     }
 
@@ -111,10 +117,10 @@ class MainActivity : FlutterActivity(), SensorEventListener {
     }
     private fun startGyroStream() {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        gyro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         if (gyro != null) {
-            sensorManager.registerListener(this, gyro, 100000)
+            sensorManager.registerListener(this, gyro, 0)
         }
     }
 }
