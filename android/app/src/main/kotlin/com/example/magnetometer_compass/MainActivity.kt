@@ -60,7 +60,7 @@ class MainActivity : FlutterActivity(), SensorEventListener {
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
         if (magnetometer != null) {
-            sensorManager.registerListener(this, magnetometer, sensorDelay)
+            sensorManager.registerListener(this, magnetometer, 16700)
         }
     }
     private fun setFlashlightOn(){
@@ -106,7 +106,6 @@ class MainActivity : FlutterActivity(), SensorEventListener {
             levelValues[1] = event.values[1]
             levelValues[2] = event.values[2]
             val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, channelName)
-
             channel.invokeMethod("gyroData", levelValues)
         }
     }
@@ -120,7 +119,7 @@ class MainActivity : FlutterActivity(), SensorEventListener {
         gyro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         if (gyro != null) {
-            sensorManager.registerListener(this, gyro, 0)
+            sensorManager.registerListener(this, gyro, 16700)
         }
     }
 }

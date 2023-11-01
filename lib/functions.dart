@@ -16,7 +16,8 @@ class Magnetometer {
   double lastData = 0;
   static double magneticFieldStrength = 0;
 
-  static final _accelerometerStreamController = StreamController<AccelerometerEvent>();
+  static final _accelerometerStreamController =
+      StreamController<AccelerometerEvent>();
   static final _magnetometerStreamController = StreamController<double>();
   static final _magneticStrengthStreamController = StreamController<double>();
 
@@ -37,6 +38,7 @@ class Magnetometer {
         double newHeadingDegrees = (headingRadians * 180 / pi) - 90;
 
         newHeadingDegrees = (newHeadingDegrees % 360 + 360) % 359;
+        if (canUpdate) {
           currentTime = DateTime.now();
           headingDegrees = newHeadingDegrees.roundToDouble();
           magneticFieldStrength =
@@ -44,13 +46,14 @@ class Magnetometer {
           _accelerometerStreamController.sink.add(currentAccelerometerEvent);
           _magnetometerStreamController.sink.add(headingDegrees);
           _magneticStrengthStreamController.sink.add(magneticFieldStrength);
+        }
       }
       if (call.method == 'gyroData') {
-       // canUpdate = (lastData - call.arguments).abs() >= 0.02;
+        canUpdate = (lastData - call.arguments[0]).abs() >= .05;
         currentAccelerometerEvent = AccelerometerEvent(
             x: call.arguments[0], y: call.arguments[1], z: call.arguments[2]);
         if (canUpdate) {
-          lastData = call.arguments;
+          lastData = call.arguments[0];
         }
       }
       return Future(() => null);
