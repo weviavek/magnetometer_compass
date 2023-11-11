@@ -10,8 +10,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+    return MaterialApp(debugShowCheckedModeBanner: false,
+      title: 'My Compass',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
         useMaterial3: true,

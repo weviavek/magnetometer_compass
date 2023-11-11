@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:magnetometer_compass/about_dialog.dart';
 import 'package:magnetometer_compass/functions.dart';
-import 'package:magnetometer_compass/model/acc_medel.dart';
 import 'package:magnetometer_compass/widgets.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -104,68 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: MagneticStrength(),
                 ),
               ),
-              LayoutBuilder(builder: (context, constraints) {
-                return Stack(
-                  children: [
-                    StreamBuilder<AccelerometerEvent>(
-                        stream: Magnetometer.accelerometerStream,
-                        builder: (context, snapshot) {
-                          double left = snapshot.hasData
-                              ? (snapshot.data!.x).abs() > 5
-                                  ? (snapshot.data!.x * 10) - 10 < 0
-                                      ? ((constraints.maxWidth / 2) + (-75)) -
-                                          10
-                                      : ((constraints.maxWidth / 2) + (75)) - 10
-                                  : ((constraints.maxWidth / 2) +
-                                          (snapshot.data!.x * 10)) -
-                                      10
-                              : 0;
-                          double top = snapshot.hasData
-                              ? (snapshot.data!.y * 10).abs() - 10 > 75
-                                  ? (snapshot.data!.y * 10) < 0
-                                      ? ((constraints.maxHeight / 2) + (75)) -
-                                          10
-                                      : ((constraints.maxHeight / 2) + (-75)) -
-                                          10
-                                  : ((constraints.maxHeight / 2) +
-                                          (-snapshot.data!.y * 10)) -
-                                      10
-                              : 0;
-                          print(((constraints.maxWidth / 2) +
-                                  (snapshot.data!.x * 10)) -
-                              10);
-                          print(left);
-                          return Positioned(
-                            left: left,
-                            top: top,
-                            child: const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircleAvatar(
-                                radius: 10,
-                                backgroundColor: Colors.red,
-                              ),
-                            ),
-                          );
-                        }),
-                  ],
-                );
-              }),
-              const Center(
-                child: CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.red,
-                ),
-              )
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
